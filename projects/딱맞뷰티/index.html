@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <style>
+    * { box-sizing: border-box; font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif; }
+    body {
+      background: #E3F4FE;
+      margin: 0; padding: 16px;
+      display: flex; justify-content: center; align-items: flex-start;
+      min-height: 100vh;
+      color: #0F172A;
+    }
+    .container {
+      width: 100%;
+      max-width: 1600px;
+      min-height: 94vh;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 32px 40px;
+      box-shadow: 0 10px 30px rgba(56, 182, 255, 0.15);
+      border: 1.5px solid #AADDFC;
+      display: flex;
+      flex-direction: column;
+    }
+    .app-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1.5px solid #E2E8F0;
+    }
+    .header-title-area h1 { color: #38B6FF; font-size: 28px; margin: 0; font-weight: 800; }
+    .header-title-area p { font-size: 15px; color: #0284C7; margin: 6px 0 0 0; font-weight: 600; }
+    .nav-links { display: flex; gap: 12px; }
+    .nav-btn {
+      padding: 8px 18px; background: #E3F4FE; color: #0284C7;
+      border: 1px solid #AADDFC; border-radius: 18px; font-size: 14px; font-weight: 700;
+      text-decoration: none; transition: all 0.2s; cursor: pointer;
+    }
+    .nav-btn:hover { background: #38B6FF; color: #ffffff; }
+    .panel { display: none; flex: 1; }
+    .panel.active { display: flex; flex-direction: column; justify-content: space-between; }
+    .btn {
+      background: #38B6FF; color: white; border: none; padding: 14px 28px; border-radius: 12px;
+      cursor: pointer; font-size: 16px; font-weight: 800; text-align: center; display: inline-block;
+      box-shadow: 0 4px 12px rgba(56, 182, 255, 0.3); transition: all 0.2s; text-decoration: none;
+    }
+    .btn:hover { background: #0284C7; }
+    .btn.secondary { background: #64748B; box-shadow: none; }
+    .btn.large { font-size: 18px; padding: 18px 42px; border-radius: 16px; }
+    .card {
+      background: #FFFFFF; border: 1.5px solid #AADDFC; border-radius: 20px;
+      padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      display: flex; flex-direction: column;
+    }
+    .card-title {
+      font-size: 17px; font-weight: 800; color: #38B6FF; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .landing-grid {
+      display: grid; grid-template-columns: 1fr 1.2fr; gap: 28px; margin-bottom: 24px; flex: 1;
+    }
+    .intro-service-card {
+      background: #E3F4FE; border: 1.5px solid #AADDFC; border-radius: 20px; padding: 32px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .service-list { list-style: none; padding: 0; margin: 24px 0; }
+    .service-list li {
+      margin-bottom: 16px; padding-left: 24px; position: relative;
+      font-size: 15px; line-height: 1.6; color: #1E293B; font-weight: 600;
+    }
+    .service-list li::before {
+      content: "✔"; position: absolute; left: 0; color: #38B6FF; font-weight: bold; font-size: 16px;
+    }
+    .color-types-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .color-type-card {
+      border-radius: 18px; padding: 24px; color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      display: flex; flex-direction: column; justify-content: center; min-height: 160px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+    }
+    .color-type-card.spring { background: #FF7F50; }
+    .color-type-card.summer { background: #AEC6CF; color: #0F172A; text-shadow: none; }
+    .color-type-card.autumn { background: #808000; }
+    .color-type-card.winter { background: #4169E1; }
+    .color-type-card .type-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .color-type-card .type-desc { font-size: 13.5px; opacity: 0.95; line-height: 1.4; }
+    .landing-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 20px; border-top: 1.5px dashed #AADDFC;
+    }
+    .landing-notice { font-size: 13px; color: #64748B; font-style: italic; }
+    .form-max-width { max-width: 520px; margin: 30px auto; width: 100%; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { font-weight: 700; font-size: 15px; color: #0F172A; display: block; margin-bottom: 8px; }
+    input[type="text"], input[type="number"], select {
+      width: 100%; padding: 14px; border: 1.5px solid #AADDFC; border-radius: 12px;
+      font-size: 15px; background: #E3F4FE; outline: none; font-weight: 600;
+    }
+    .radio-group { display: flex; gap: 10px; }
+    .radio-option {
+      flex: 1; text-align: center; padding: 12px; border: 1.5px solid #AADDFC; border-radius: 12px;
+      cursor: pointer; font-size: 15px; background: #fff; color: #0284C7; font-weight: 700;
+    }
+    .radio-option.selected { background: #38B6FF; color: white; border-color: #38B6FF; }
+    .preview-box {
+      width: 100%; height: 280px; background: #0F172A; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center; color: #94A3B8;
+      overflow: hidden; border: 2px dashed #AADDFC; margin-bottom: 20px;
+    }
+    .preview-box img { width: 100%; height: 100%; object-fit: contain; }
+    .result-summary-header {
+      text-align: center; background: #E3F4FE; border: 1.5px solid #AADDFC;
+      border-radius: 20px; padding: 22px; margin-bottom: 24px;
+    }
+    .result-summary-header h2 { margin: 0 0 8px 0; font-size: 24px; color: #0F172A; font-weight: 800; }
+    .result-summary-header h2 span { color: #38B6FF; }
+    .lighting-badge {
+      display: inline-block; background: #ffffff; color: #0284C7; border: 1px solid #AADDFC;
+      padding: 6px 18px; border-radius: 18px; font-size: 13.5px; font-weight: 700;
+    }
+    .result-main-grid {
+      display: grid; grid-template-columns: 1fr 1.1fr 1.2fr; gap: 24px; margin-bottom: 24px; flex: 1;
+    }
+    .color-chip-group { margin-bottom: 18px; }
+    .color-chip-label { font-size: 14px; font-weight: 800; margin-bottom: 10px; color: #0284C7; display: flex; align-items: center; gap: 6px; }
+    .color-chips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .chip-item {
+      display: flex; align-items: center; gap: 8px; background: #F8FAFC; padding: 8px 12px;
+      border-radius: 12px; border: 1px solid #E2E8F0;
+    }
+    .chip-circle { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0; }
+    .chip-info { display: flex; flex-direction: column; }
+    .chip-name { font-size: 13px; color: #0F172A; font-weight: 800; }
+    .chip-sub { font-size: 11px; color: #64748B; font-weight: 500; }
+    .fashion-box { background: #F8FAFC; border-radius: 16px; padding: 18px; border: 1px solid #E2E8F0; margin-top: 8px; }
+    .clothes-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .clothes-item {
+      background: #ffffff; border: 1.5px solid #AADDFC; padding: 12px; border-radius: 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .clothes-color { width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0; }
+    .clothes-text { font-size: 13px; font-weight: 700; color: #334155; }
+    .clothes-text span { display: block; font-size: 11px; color: #38B6FF; font-weight: 800; margin-bottom: 2px; }
+    .fashion-info { display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: #1E293B; line-height: 1.5; }
+    .info-tag { font-weight: 800; color: #0284C7; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+    .info-desc { background: #ffffff; padding: 10px 12px; border-radius: 10px; border: 1px solid #E2E8F0; font-size: 12.5px; color: #475569; }
+    .cosmetic-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .cosmetic-item {
+      background: #E3F4FE; border: 1px solid #AADDFC; border-radius: 10px;
+      padding: 10px 14px; font-weight: 700; color: #0F172A; font-size: 13px;
+    }
+    .step-guide-list { display: flex; flex-direction: column; gap: 10px; }
+    .step-guide-card {
+      background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 12px 14px;
+      transition: all 0.2s;
+    }
+    .step-guide-card:hover { border-color: #38B6FF; background: #ffffff; }
+    .step-guide-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .step-guide-title { font-weight: 800; font-size: 13.5px; color: #0284C7; }
+    .step-guide-badge { font-size: 11px; background: #E3F4FE; color: #38B6FF; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+    .step-guide-desc { font-size: 12.5px; color: #334155; line-height: 1.5; font-weight: 600; margin-bottom: 4px; }
+    .step-guide-tip { font-size: 11.5px; color: #0284C7; font-weight: 500; background: #E3F4FE; padding: 6px 10px; border-radius: 8px; margin-top: 4px; }
+    .result-bottom-grid {
+      display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px;
+      padding-top: 20px; border-top: 1.5px dashed #AADDFC; align-items: center;
+    }
+    .shop-links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+    .shop-btn {
+      text-align: center; padding: 12px 6px; background: #ffffff;
+      border: 1.5px solid #38B6FF; color: #38B6FF; border-radius: 12px; text-decoration: none;
+      font-size: 13.5px; font-weight: 800; transition: all 0.2s;
+    }
+    .shop-btn:hover { background: #38B6FF; color: white; }
+    .tip-card {
+      background: #E3F4FE; border: 1.5px solid #AADDFC; border-radius: 16px; padding: 18px 20px;
+      height: 100%; display: flex; flex-direction: column; justify-content: center;
+    }
+    .tip-card .card-title { margin-bottom: 8px; font-size: 15px; }
+    .tip-card p { font-size: 12.5px; color: #334155; line-height: 1.5; margin: 0; font-weight: 600; }
+    @media (max-width: 1024px) {
+      .landing-grid, .result-main-grid, .result-bottom-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header class="app-header">
+    <div class="header-title-area">
+      <h1>💄 스마트 퍼스널 컬러 진단</h1>
+      <p>AI 기반 피부톤 분석 및 맞춤 스타일링 리포트</p>
+    </div>
+    <nav class="nav-links">
+      <a href="#" class="nav-btn" onclick="location.reload();">홈</a>
+      <a href="#" class="nav-btn">메뉴</a>
+      <a href="#" class="nav-btn">마이 페이지</a>
+    </nav>
+  </header>
+
+  <div class="panel active" id="page1">
+    <div class="landing-grid">
+      <div class="intro-service-card">
+        <div>
+          <div class="card-title" style="font-size: 20px;">✨ 스마트 퍼스널 컬러 진단이란?</div>
+          <p style="font-size:14.5px; color:#475569; line-height:1.6; margin:0 0 16px 0;">
+            스마트 퍼스널 컬러 진단 서비스는 인공지능 정밀 피부톤 분석 알고리즘을 활용하여 나에게 꼭 맞는 베스트 컬러와 맞춤 스타일링을 제안합니다.
+          </p>
+          <ul class="service-list">
+            <li>카메라 촬영/사진 업로드로 간편하게 측정</li>
+            <li>정밀 피부 정색 측정치(L, a, b 색상 공간) 기반 진단</li>
+            <li>현재 장소에 맞춘 지능형 조명 보정 알고리즘 적용</li>
+            <li>개인 맞춤형 패션 코디, 화장품, 단계별 메이크업 리포트 제공</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="color-types-grid">
+        <div class="color-type-card spring">
+          <div class="type-title">봄 웜 (Spring)</div>
+          <div class="type-desc">따뜻하고 화사하며 생기발랄한 파스텔 & 비비드 피치 톤</div>
+        </div>
+        <div class="color-type-card summer">
+          <div class="type-title">여름 쿨 (Summer)</div>
+          <div class="type-desc">시원하고 우아하며 청량한 라이트 파스텔 & 블루 톤</div>
+        </div>
+        <div class="color-type-card autumn">
+          <div class="type-title">가을 웜 (Autumn)</div>
+          <div class="type-desc">차분하고 고급스러운 딥 뮤트 & 차콜 톤</div>
+        </div>
+        <div class="color-type-card winter">
+          <div class="type-title">겨울 쿨 (Winter)</div>
+          <div class="type-desc">선명하고 카리스마 있는 클리어 딥 & 비비드 선명 톤</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="landing-bottom">
+      <div class="landing-notice">
+        * 퍼스널 컬러를 설명하는 상자는 해당되는 컬러의 대표적인 컬러를 바탕색으로 지정하였습니다.
+      </div>
+      <button class="btn large" id="btnGoForm">진단 시작하기 →</button>
+    </div>
+  </div>
+
+  <div class="panel" id="stepForm">
+    <div class="form-max-width">
+      <div class="card">
+        <div class="card-title">📝 진단 기본 정보 입력</div>
+        <div class="form-group">
+          <label>이름</label>
+          <input type="text" id="inputName" placeholder="이름을 입력해주세요">
+        </div>
+        <div class="form-group">
+          <label>성별</label>
+          <div class="radio-group">
+            <div class="radio-option selected" data-value="여성" onclick="selectGender(this)">여성</div>
+            <div class="radio-option" data-value="남성" onclick="selectGender(this)">남성</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>나이</label>
+          <input type="number" id="inputAge" placeholder="나이를 입력해주세요">
+        </div>
+        <div class="form-group">
+          <label>💡 현재 측정 장소의 조명 환경</label>
+          <select id="lightingType">
+            <option value="WHITE_LED" selected>백색 형광등 / 주광색 LED (일반 실내)</option>
+            <option value="WARM_LED">전구색 / 주황색 LED (따뜻한 조명)</option>
+            <option value="NATURAL">자연광 (창가 / 야외)</option>
+          </select>
+        </div>
+        <button class="btn" id="btnStartCapture" style="width:100%; margin-top:12px;">다음: 사진 촬영하기 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="stepCapture">
+    <div class="form-max-width">
+      <div class="card">
+        <div class="card-title">📸 사진 선택 / 촬영</div>
+        <div class="preview-box">
+          <span id="previewText">아래 버튼을 눌러 얼굴 사진을 선택해주세요</span>
+          <img id="capturedImg" style="display:none;">
+          <canvas id="hiddenCanvas" style="display:none;"></canvas>
+        </div>
+        <label class="btn" style="cursor:pointer; display:block; text-align:center;">
+          📷 카메라 촬영 및 사진 업로드
+          <input type="file" id="cameraInput" accept="image/*" capture="user" style="display:none;">
+        </label>
+        <button class="btn secondary" id="btnAnalyze" style="display:none; width:100%; margin-top:12px;">진단 결과 분석하기 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="page2">
+    <div class="result-summary-header">
+      <h2>퍼스널 컬러 진단 결과 <span id="resUserName">[OOO]</span>님의 컬러는 <span id="resColorType">[봄 웜]</span> 입니다.</h2>
+      <div id="lightingBadge" class="lighting-badge">💡 적용된 조명 보정: 백색 형광등 / 주광색</div>
+    </div>
+
+    <div class="result-main-grid">
+      <div class="card">
+        <div class="card-title">🎨 컬러 상세 & 대표 컬러 팔레트</div>
+        <div style="font-size:13px; color:#475569; line-height:1.5; margin-bottom:16px;">
+          고객님의 피부 매칭 결과에 맞춘 베스트 & 워스트 대표 색상 팔레트입니다.
+        </div>
+        <div id="colorChipContainer"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">👗 추천 패션 & 착장 스타일링</div>
+        <div style="font-size:14px; font-weight:800; color:#0F172A; margin-bottom:8px;" id="recStyleTitle"></div>
+        <div class="fashion-box">
+          <div class="clothes-chips" id="clothesChips"></div>
+          <div class="fashion-info">
+            <div>
+              <div class="info-tag">💡 퍼스널 컬러 기반 추천 이유</div>
+              <div class="info-desc" id="fashionReason"></div>
+            </div>
+            <div>
+              <div class="info-tag">✨ 스타일링 연출 효과</div>
+              <div class="info-desc" id="fashionEffect"></div>
+            </div>
+            <div>
+              <div class="info-tag">👟 추천 액세서리 & 매칭 신발</div>
+              <div class="info-desc" id="fashionAcc">골드 뱅글, 누드톤 힐, 골드/베이지 스니커즈</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💋 상세 뷰티 & 단계별 메이크업 가이드</div>
+        <div style="font-size:13px; font-weight:800; color:#0284C7; margin-bottom:8px;">💄 추천 매칭 화장품</div>
+        <div class="cosmetic-list" id="recCosmetic"></div>
+
+        <div style="font-size:13px; font-weight:800; color:#0284C7; margin: 12px 0 8px 0;">✨ 상세 4단계 메이크업 팁</div>
+        <div class="step-guide-list" id="stepGuideContainer"></div>
+      </div>
+    </div>
+
+    <div class="result-bottom-grid">
+      <div class="card" style="padding: 18px 24px;">
+        <div class="card-title" style="margin-bottom:10px;">🛍️ 공식 쇼핑몰 바로가기</div>
+        <div class="shop-links">
+          <a href="https://www.oliveyoung.co.kr" target="_blank" class="shop-btn">올리브영 🛒</a>
+          <a href="https://www.daisomall.co.kr" target="_blank" class="shop-btn">다이소몰 🛍️</a>
+          <a href="https://clubclio.co.kr" target="_blank" class="shop-btn">클리오 💄</a>
+          <a href="https://www.musinsa.com" target="_blank" class="shop-btn">무신사 👕</a>
+        </div>
+        <button class="btn" style="width:100%; padding:10px;" onclick="location.reload();">홈으로 돌아가기 🔄</button>
+      </div>
+
+      <div class="tip-card">
+        <div class="card-title">💡 퍼스널 컬러 활용 꿀팁</div>
+        <p>
+          추천해 드린 베스트 컬러는 얼굴과 가까운 상의나 스카프, 립 제품으로 활용할 때 얼굴선이 가장 화사해집니다. 워스트 컬러도 하의나 가방, 신발 등으로 연출하시면 한층 스타일리시하게 소화하실 수 있습니다!
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let selectedGender = '여성';
+  let userInfo = {};
+
+  function showPanel(panelId) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
+  }
+
+  function selectGender(el) {
+    document.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedGender = el.dataset.value;
+  }
+
+  document.getElementById('btnGoForm').addEventListener('click', () => showPanel('stepForm'));
+
+  document.getElementById('btnStartCapture').addEventListener('click', () => {
+    const name = document.getElementById('inputName').value.trim();
+    const age = document.getElementById('inputAge').value.trim();
+    const lighting = document.getElementById('lightingType').value;
+
+    if (!name || !age) { alert('이름과 나이를 입력해주세요.'); return; }
+    userInfo = { name, gender: selectedGender, age, lighting };
+    showPanel('stepCapture');
+  });
+
+  function rgbToLab(r, g, b) {
+    let rl = r/255, gl = g/255, bl = b/255;
+    rl = rl > 0.04045 ? Math.pow((rl+0.055)/1.055, 2.4) : rl/12.92;
+    gl = gl > 0.04045 ? Math.pow((gl+0.055)/1.055, 2.4) : gl/12.92;
+    bl = bl > 0.04045 ? Math.pow((bl+0.055)/1.055, 2.4) : bl/12.92;
+    rl *= 100; gl *= 100; bl *= 100;
+
+    const x = rl*0.4124 + gl*0.3576 + bl*0.1805;
+    const y = rl*0.2126 + gl*0.7152 + bl*0.0722;
+    const z = rl*0.0193 + gl*0.1192 + bl*0.9505;
+
+    let xr = x/95.047, yr = y/100.0, zr = z/108.883;
+    xr = xr > 0.008856 ? Math.pow(xr, 1/3) : (7.787*xr)+(16/116);
+    yr = yr > 0.008856 ? Math.pow(yr, 1/3) : (7.787*yr)+(16/116);
+    zr = zr > 0.008856 ? Math.pow(zr, 1/3) : (7.787*zr)+(16/116);
+
+    return { L: (116*yr)-16, a: 500*(xr-yr), b: 200*(yr-zr) };
+  }
+
+  function extractSkinLabFromImage(imgEl) {
+    const canvas = document.getElementById('hiddenCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = imgEl.naturalWidth || 320;
+    canvas.height = imgEl.naturalHeight || 240;
+    ctx.drawImage(imgEl, 0, 0);
+
+    const centerX = Math.floor(canvas.width / 2);
+    const centerY = Math.floor(canvas.height / 2);
+    const sampleSize = Math.max(10, Math.floor(canvas.width * 0.1));
+    const imgData = ctx.getImageData(centerX - sampleSize/2, centerY - sampleSize/2, sampleSize, sampleSize).data;
+
+    let totalR = 0, totalG = 0, totalB = 0, count = 0;
+    for (let i = 0; i < imgData.length; i += 4) {
+      totalR += imgData[i]; totalG += imgData[i+1]; totalB += imgData[i+2]; count++;
+    }
+
+    return rgbToLab(count > 0 ? totalR/count : 180, count > 0 ? totalG/count : 140, count > 0 ? totalB/count : 120);
+  }
+
+  document.getElementById('cameraInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = document.getElementById('capturedImg');
+        img.src = event.target.result;
+        img.onload = () => {
+          img.style.display = 'block';
+          document.getElementById('previewText').style.display = 'none';
+          document.getElementById('btnAnalyze').style.display = 'block';
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  document.getElementById('btnAnalyze').addEventListener('click', () => {
+    let measuredLab = extractSkinLabFromImage(document.getElementById('capturedImg'));
+    let lightingText = '';
+    if (userInfo.lighting === 'WARM_LED') {
+      measuredLab.b -= 5.0; measuredLab.a -= 2.0;
+      lightingText = '💡 적용된 조명 보정: 전구색 / 따뜻한 LED';
+    } else if (userInfo.lighting === 'WHITE_LED') {
+      measuredLab.a += 1.5;
+      lightingText = '💡 적용된 조명 보정: 백색 형광등 / 주광색';
+    } else {
+      lightingText = '💡 적용된 조명 보정: 자연광 (보정 없음)';
+    }
+
+    document.getElementById('lightingBadge').innerText = lightingText;
+
+    google.script.run.withSuccessHandler(res => {
+      if (res.success) {
+        document.getElementById('resUserName').innerText = userInfo.name;
+        document.getElementById('resColorType').innerText = res.personalColor;
+        renderColorChips(res.colorChips);
+        renderFashionGuide(res.fashionGuide);
+        renderCosmetics(res.recommend ? res.recommend.cosmetic : '');
+        renderStepGuide(res.personalColor);
+        showPanel('page2');
+
+        google.script.run.logResult({
+          name: userInfo.name,
+          gender: userInfo.gender,
+          age: userInfo.age,
+          L: res.L,
+          a: res.a,
+          b: res.b,
+          personalColor: res.personalColor
+        });
+      } else {
+        alert('오류 발생: ' + res.error);
+      }
+    }).analyzeColor(measuredLab, userInfo.gender);
+  });
+
+  function renderColorChips(chips) {
+    const container = document.getElementById('colorChipContainer');
+    if (!chips) return;
+    let html = '<div class="color-chip-group"><div class="color-chip-label">🌟 Best Colors (추천)</div><div class="color-chips">';
+    chips.best.forEach(c => {
+      html += `
+        <div class="chip-item">
+          <span class="chip-circle" style="background-color:${c.hex}"></span>
+          <div class="chip-info">
+            <span class="chip-name">${c.name}</span>
+            <span class="chip-sub">얼굴선 화사함 극대화</span>
+          </div>
+        </div>`;
+    });
+    html += '</div></div><div class="color-chip-group"><div class="color-chip-label">⚠️ Worst Colors (피해야 할 색상)</div><div class="color-chips">';
+    chips.worst.forEach(c => {
+      html += `
+        <div class="chip-item">
+          <span class="chip-circle" style="background-color:${c.hex}"></span>
+          <div class="chip-info">
+            <span class="chip-name">${c.name}</span>
+            <span class="chip-sub">피부 어두움/칙칙함 주의</span>
+          </div>
+        </div>`;
+    });
+    html += '</div></div>';
+    container.innerHTML = html;
+  }
+
+  function renderFashionGuide(fashion) {
+    if (!fashion) return;
+    document.getElementById('recStyleTitle').innerText = fashion.title || '';
+
+    const chipsContainer = document.getElementById('clothesChips');
+    chipsContainer.innerHTML = `
+      <div class="clothes-item">
+        <div class="clothes-color" style="background-color: ${fashion.top.hex};"></div>
+        <div class="clothes-text"><span>추천 상의 색상</span>${fashion.top.name}</div>
+      </div>
+      <div class="clothes-item">
+        <div class="clothes-color" style="background-color: ${fashion.bottom.hex};"></div>
+        <div class="clothes-text"><span>추천 하의 색상</span>${fashion.bottom.name}</div>
+      </div>
+    `;
+
+    document.getElementById('fashionReason').innerText = fashion.reason || '';
+    document.getElementById('fashionEffect').innerText = fashion.effect || '';
+  }
+
+  function renderCosmetics(cosmeticRaw) {
+    const container = document.getElementById('recCosmetic');
+    if (!cosmeticRaw) return;
+    const lines = cosmeticRaw.split('\n');
+    let html = '';
+    lines.forEach(line => {
+      if (!line.trim()) return;
+      html += `<div class="cosmetic-item">${line.trim()}</div>`;
+    });
+    container.innerHTML = html;
+  }
+
+  function renderStepGuide(personalColor) {
+    const container = document.getElementById('stepGuideContainer');
+    let steps = [];
+
+    if (personalColor.includes("가을") || personalColor.includes("Autumn")) {
+      steps = [
+        { title: "1단계 (베이스)", badge: "피부 표현", desc: "차분하고 깨끗한 옐로우 웜톤 베이스로 결점을 커버합니다.", tip: "💡 팁: 번들거림을 줄인 실키하고 매트한 마무리 표현이 핵심입니다." },
+        { title: "2단계 (아이)", badge: "음영 연출", desc: "테라코타 및 음영 브라운 섀도로 깊이 있는 눈매를 연출합니다.", tip: "💡 팁: 과한 펄보다는 블렌딩이 잘되는 딥한 매트 글리터를 활용하세요." },
+        { title: "3단계 (블러셔)", badge: "생기 부여", desc: "사선 방향으로 차분한 누드 브릭/말린 장미 톤 블러셔를 터치합니다.", tip: "💡 팁: 둥글게 바르지 않고 관자놀이 방향으로 가볍게 쓸어줍니다." },
+        { title: "4단계 (립)", badge: "포인트 매칭", desc: "체리 브릭, 칠리 틴트로 오버립 및 분위기 있는 포인트를 줍니다.", tip: "💡 팁: 입술 중앙부터 그라데이션 후 외곽을 오버립으로 경계를 풀어주세요." }
+      ];
+    } else {
+      steps = [
+        { title: "1단계 (베이스)", badge: "피부 표현", desc: "맑고 투명하며 얇게 밀착되는 촉촉한 웜 피치 베이스 연출", tip: "💡 팁: 얇은 수분 프라이머로 맑은 광채감을 먼저 잡아주세요." },
+        { title: "2단계 (아이)", badge: "음영 연출", desc: "화사하고 생기있는 피치 톤 음영 섀도우를 가볍게 도포합니다.", tip: "💡 팁: 애교살 부분에 살구빛 아이라이너로 포인트를 줍니다." },
+        { title: "3단계 (블러셔)", badge: "생기 부여", desc: "양 볼 중앙에 은은한 코랄 핑크빛 블러셔를 동글동글하게 터치합니다.", tip: "💡 팁: 영역을 너무 아래로 내리지 않도록 광대 상단에 바릅니다." },
+        { title: "4단계 (립)", badge: "포인트 매칭", desc: "촉촉한 글로우 제형의 코랄 로즈 틴트로 부드러운 생기를 완성합니다.", tip: "💡 팁: 입술 중앙에 틴트를 여러 번 레이어링하세요." }
+      ];
+    }
+
+    let html = '';
+    steps.forEach(s => {
+      html += `
+        <div class="step-guide-card">
+          <div class="step-guide-header">
+            <span class="step-guide-title">${s.title}</span>
+            <span class="step-guide-badge">${s.badge}</span>
+          </div>
+          <div class="step-guide-desc">${s.desc}</div>
+          <div class="step-guide-tip">${s.tip}</div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+</script>
+</body>
+</html>
