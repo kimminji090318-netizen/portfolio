@@ -1,0 +1,20 @@
+# Ignore local environment files
+.env
+.env.local
+.env.*
+!.env.example
+
+# Common project files
+node_modules/
+dist/
+build/
+.vite/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Optional: VS Code settings
+.vscode/
