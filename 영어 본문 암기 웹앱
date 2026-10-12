@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>영어 본문 트레이너</title>
+<style>
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  font-family:'Malgun Gothic',sans-serif;max-width:820px;margin:15px auto;
+  background:#f8fafc;color:#222;padding:0 10px 30px 10px;
+}
+.card{background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.1);overflow:hidden;margin-bottom:20px}
+header{background:#4f46e5;color:#fff;padding:16px;text-align:center}
+header h2{margin:0;font-size:1.3rem;word-break:keep-all}
+
+.row{
+  display:flex;flex-wrap:nowrap;gap:6px;padding:10px;border-bottom:1px solid #e2e8f0;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;
+}
+.row::-webkit-scrollbar{height:5px}
+.row::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px}
+
+button{
+  border:1px solid #cbd5e1;background:#fff;padding:8px 12px;border-radius:6px;
+  cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap;min-height:40px;flex-shrink:0;
+  transition:background .12s ease, transform .08s ease, box-shadow .12s ease;
+}
+button:hover{background:#f1f5f9}
+button:active{
+  transform:scale(0.94);
+  background:#c7d2fe !important;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.15);
+}
+button.flash{
+  background:#4f46e5 !important;
+  color:#fff !important;
+}
+
+button.active{background:#4f46e5;color:#fff;border-color:#4f46e5}
+.lvl-easy.active{background:#fbbf24;color:#000;border-color:#f59e0b}
+.lvl-mid.active{background:#fb923c;color:#000;border-color:#ea580c}
+.lvl-hard.active{background:#ef4444;color:#fff;border-color:#b91c1c}
+
+#content{padding:20px;line-height:2.1;font-size:16px;min-height:150px;word-break:keep-all;overflow-wrap:break-word}
+.blank{border:2px solid #94a3b8;border-radius:4px;text-align:center;font-size:15px;width:auto;min-width:60px;max-width:120px;padding:2px 4px;display:inline-block}
+.blank:focus{border-color:#4f46e5;outline:none}
+.blank.ok{background:#dcfce7;border-color:#16a34a}
+.blank.no{background:#fee2e2;border-color:#dc2626}
+.qbox{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:12px}
+.qbox label{display:block;margin:6px 0;cursor:pointer;line-height:1.5}
+.qbox.ok{border-color:#16a34a;background:#f0fdf4}
+.qbox.no{border-color:#dc2626;background:#fef2f2}
+
+.bottom{
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;
+  padding:12px 18px;background:#f1f5f9;border-top:1px solid #cbd5e1;
+}
+.bottom>div{display:flex;flex-wrap:wrap;gap:6px}
+.guide{display:none;margin:0 0 18px;padding:10px;background:#eff6ff;border-left:4px solid #4f46e5;font-size:14px;word-break:keep-all}
+#score{font-weight:bold;color:#4f46e5;white-space:nowrap}
+
+.nav-btns{display:flex;gap:8px}
+.prev-btn{background:#6366f1;color:#fff;border-color:#4338ca;font-size:14px;padding:10px 16px}
+.prev-btn:hover{background:#4f46e5}
+.next-btn{background:#16a34a;color:#fff;border-color:#15803d;font-size:14px;padding:10px 16px}
+.next-btn:hover{background:#15803d}
+
+@media (max-width:600px){
+  body{margin:0 auto;padding:0 6px 30px 6px}
+  header h2{font-size:1.05rem}
+  .row{padding:6px;gap:4px}
+  button{padding:7px 10px;font-size:12px;min-height:38px}
+  #content{padding:14px;font-size:15px;line-height:2}
+  .blank{min-width:50px;max-width:90px;font-size:14px;padding:1px 3px}
+  .bottom{flex-direction:column;align-items:stretch;padding:10px 12px}
+  .bottom>div{justify-content:center}
+  #score{text-align:center}
+  .guide{font-size:13px;padding:8px}
+  .nav-btns{width:100%}
+  .prev-btn,.next-btn{flex:1;font-size:14px;padding:12px}
+}
+@media (max-width:380px){
+  header h2{font-size:0.95rem}
+  button{font-size:11px;padding:6px 8px}
+  #content{font-size:14px}
+  .blank{min-width:44px;max-width:75px;font-size:13px}
+}
+</style>
+</head>
+<body>
+<div class="card">
+<header><h2>📖 영어 본문 완전정복 트레이너</h2></header>
+
+<div class="row" id="unitTabs"></div>
+<div class="row" id="paraTabs"></div>
+<div class="row" id="modeTabs"></div>
+<div class="row" id="levelTabs"></div>
+
+<div id="content"></div>
+<div class="guide" id="guide"></div>
+
+<div class="bottom">
+  <div>
+    <button onclick="checkAnswer(this)">✅ 채점하기</button>
+    <button onclick="toggleGuide(this)">💡 정답 보기/숨기기</button>
+    <button onclick="reshuffle(this)">🔀 다시 풀기(새로 섞기)</button>
+  </div>
+  <div class="nav-btns">
+    <button class="prev-btn" onclick="prevQuestion(this)">⬅️ 이전 문제</button>
+    <button class="next-btn" onclick="nextQuestion(this)">➡️ 다음 문제</button>
+  </div>
+  <div id="score"></div>
+</div>
+</div>
+
+<script>
+const UNITS = [
+{
+ name:"5과 Hidden People in Sports",
+ paras:[
+  {text:"In sports, only the players get a trophy or medal, but they don't win on their own. There are people who help the players. These people are often hidden and don't get attention. However, they are as important as the players. Here are some examples.",
+   quizzes:[
+    {q:"윗글의 중심 내용으로 가장 알맞은 것은?",opts:["선수들이 메달을 받는 조건","선수를 돕는 보이지 않는 사람들의 중요성","스포츠 경기 규칙 변화","관중들의 응원 방식"],ans:1},
+    {q:"보이지 않는 조력자의 예로 본문에서 언급되지 않은 것은?",opts:["페이서","피트 크루","셰르파","심판"],ans:3},
+    {q:"이 사람들의 공통점으로 알맞은 것은?",opts:["선수만큼 중요하지만 주목받지 못함","항상 경기에서 승리함","선수보다 더 유명함","경기 규칙을 직접 정함"],ans:0}
+   ]},
+  {text:"Pacers run with other runners and lead them in a marathon. Pacers are experienced runners, and their job is to help other runners manage their race better. There can be several pacers in a race. Each pacer runs at different speeds and finishes the race in different times. Pacers usually have flags or balloons showing their finish time.",
+   quizzes:[
+    {q:"Pacers에 대한 설명으로 알맞지 않은 것은?",opts:["경험 많은 주자들이다","완주 시간을 보여주는 깃발을 가진다","자신의 우승만을 목표로 한다","여러 명이 한 경기에 참여할 수 있다"],ans:2},
+    {q:"페이서가 완주 시간을 표시하기 위해 사용하는 것은?",opts:["깃발이나 풍선","메달","지도","시계탑"],ans:0},
+    {q:"한 경기에 페이서는 몇 명까지 참여할 수 있는가?",opts:["한 명만","여러 명 가능","두 명까지만","참여할 수 없음"],ans:1}
+   ]},
+  {text:"Runners can choose a pacer depending on their target finish time. For example, if a runner wants to finish the race in four hours, the runner will follow the four-hour pacer. Since the pacer keeps track of the time, the runner can achieve his or her goal of finishing the marathon in a particular time more easily. In short, pacers run but they don't run to win. They run for others.",
+   quizzes:[
+    {q:"페이서를 선택하는 기준은 무엇인가?",opts:["목표 완주 시간","나이","성별","소속팀"],ans:0},
+    {q:"페이서를 따라갈 때 얻을 수 있는 이점은?",opts:["목표 시간 내 완주가 쉬워짐","상금을 받게 됨","순위가 자동으로 오름","체력이 덜 필요함"],ans:0},
+    {q:"'pacers run but they don't run to win'의 의미로 알맞은 것은?",opts:["그들은 승리가 아닌 다른 사람을 돕기 위해 달린다","그들은 항상 진다","그들은 걷기만 한다","그들은 규칙을 어긴다"],ans:0}
+   ]},
+  {text:"You may only see the car and the driver during most car races, but there is a team behind the driver. This team is called a pit crew. A pit is a place on the side of the race track, and drivers stop there several times during a race. The main job of the pit crew is to check the car and change the tires. Changing the tires is especially important because the tires wear out easily in a high speed race.",
+   quizzes:[
+    {q:"Pit crew의 주요 임무는?",opts:["관중 안내","차량 점검과 타이어 교체","경기 규칙 설명","중계 방송"],ans:1},
+    {q:"피트(pit)란 무엇인가?",opts:["트랙 옆에 있는 정비 장소","결승선","관중석","출발 지점"],ans:0},
+    {q:"타이어 교체가 특히 중요한 이유는?",opts:["고속 경주에서 타이어가 쉽게 닳기 때문","타이어가 매우 비싸서","안전 규정 때문","관중들이 원해서"],ans:0}
+   ]},
+  {text:"A pit stop can be as short as 2 seconds, and there are as many as 20 members on a crew. Therefore, the pit crew has to work in perfect harmony. The driver may get all the attention, but as people say, Races are won in the pits.",
+   quizzes:[
+    {q:"'Races are won in the pits'의 의미로 알맞은 것은?",opts:["피트 크루의 협업이 승리를 좌우한다","경기는 피트에서 시작된다","운전자 혼자 승리를 결정한다","피트에서 경기가 중단된다"],ans:0},
+    {q:"피트 크루는 최대 몇 명까지 구성될 수 있는가?",opts:["20명","5명","10명","2명"],ans:0},
+    {q:"피트스탑은 짧으면 몇 초까지 걸리는가?",opts:["2초","20초","1분","10초"],ans:0}
+   ]},
+  {text:"The word Sherpa comes from the Sherpa tribe, which lives in the eastern part of Nepal. Sherpas have good climbing skills and know their way around the mountains well. They also have little difficulty breathing high up in the mountains. Therefore, mountain climbers started to hire Sherpas to help them climb Mount Everest.",
+   quizzes:[
+    {q:"등반가들이 셰르파를 고용한 이유가 아닌 것은?",opts:["뛰어난 등반 기술","고산에서 호흡이 수월함","길을 잘 앎","비싼 장비를 제공해서"],ans:3},
+    {q:"셰르파는 어디 출신 부족인가?",opts:["네팔 동부","인도 북부","티벳 서부","중국 남부"],ans:0},
+    {q:"셰르파의 특징으로 알맞지 않은 것은?",opts:["고산에서 호흡이 수월함","산길을 잘 앎","등반 기술이 뛰어남","무거운 짐을 전혀 들지 않음"],ans:3}
+   ]},
+  {text:"Sherpas lead mountain climbers to the top of the mountain. They support climbers in many ways. For example, they put up tents and carry climbers' bags. Sherpas are often called the invisible people of Mount Everest because people often see a picture of only the climbers at the top of the mountain.",
+   quizzes:[
+    {q:"셰르파가 'invisible people'로 불리는 이유는?",opts:["사진에 등반가만 나오기 때문에","밤에만 활동해서","이름을 밝히지 않아서","산에 살지 않아서"],ans:0},
+    {q:"셰르파가 등반가를 돕는 방법으로 언급되지 않은 것은?",opts:["텐트 설치","짐 운반","길 안내","사진 촬영"],ans:3},
+    {q:"셰르파의 역할로 알맞은 것은?",opts:["등반가를 정상까지 이끎","경기 심판을 봄","의료 검진을 함","숙소를 예약함"],ans:0}
+   ]}
+ ]
+},
+{
+ name:"8과 Munjado",
+ paras:[
+  {text:"Look at the painting on the right. Do you see the Chinese character, hyo? Do you also see a carp, a geomungo, and a fan? This kind of painting is called Munjado, and it is a type of folk painting that was popular in the late Joseon dynasty. In Munjado, there is usually a Chinese character with some animals or objects. One of eight Chinese characters appears in Munjado. They are hyo, je, chung, sin, ye, ui, yeom, and chi, and they represent the values that were important to people of the Joseon dynasty.",
+   quizzes:[
+    {q:"문자도에 대한 설명으로 알맞지 않은 것은?",opts:["조선 후기 유행한 민화이다","한자와 동물, 사물이 함께 그려진다","8개의 한자 중 하나가 등장한다","서양에서 전래된 그림 양식이다"],ans:3},
+    {q:"문자도에 등장하는 한자는 총 몇 개인가?",opts:["8개","4개","10개","6개"],ans:0},
+    {q:"hyo 문자도에 함께 그려진 것이 아닌 것은?",opts:["잉어","거문고","부채","나비"],ans:3}
+   ]},
+  {text:"The animals or objects in Munjado are not just decorations. They often are symbolic. For example, carp in the paintings of hyo symbolize respect for parents because of an old story. Once upon a time, a man lived with his old mother. One winter, the man's mother became ill and couldn't eat anything. On one very cold day, the mother said, It would be wonderful if I could eat fresh fish.",
+   quizzes:[
+    {q:"잉어(carp)가 상징하는 것은?",opts:["부모에 대한 효심","형제간의 우애","나라에 대한 충성","정의를 향한 의지"],ans:0},
+    {q:"겨울에 아픈 어머니가 원했던 것은?",opts:["신선한 생선을 먹는 것","따뜻한 옷","약을 먹는 것","병원에 가는 것"],ans:0},
+    {q:"이야기 속 강의 상태는 어떠했는가?",opts:["완전히 얼어 있었다","계속 흐르고 있었다","말라 있었다","넘치고 있었다"],ans:0}
+   ]},
+  {text:"The man went out to the river, but it was completely frozen. It was impossible for him to catch any fish. The man was so disappointed that he cried out to the sky, What should I do? Please help me. Then the ice melted, and three carp suddenly came out of the water. The man went back home and cooked the fish for his mother. Then his mother got well.",
+   quizzes:[
+    {q:"이야기 속 사건이 일어난 순서로 알맞은 것은?",opts:["강이 얼어붙음 → 하늘에 도움 요청 → 얼음이 녹고 잉어가 나타남","잉어를 잡음 → 강이 얼어붙음 → 어머니가 아픔","어머니가 나음 → 강에 감 → 얼음이 얾","잉어 요리 → 강이 얼음 → 하늘에 기도"],ans:0},
+    {q:"아들이 하늘에 도움을 요청한 후 일어난 일은?",opts:["얼음이 녹고 잉어가 나타남","비가 내림","물고기가 사라짐","어머니가 돌아가심"],ans:0},
+    {q:"이 이야기가 상징하는 가치는 무엇인가?",opts:["효심","우정","충성심","정의감"],ans:0}
+   ]},
+  {text:"There are other examples of symbolic objects in Munjado. They are bamboo in the paintings of the character chung and lotus flowers in the paintings of ui. Bamboo does not bend. It stays green in all kinds of weather. For these reasons, bamboo came to symbolize loyalty to the king. In the case of lotus flowers, they grow in muddy ponds but still bloom beautifully. They thus became a symbol of a person's will to fight for justice despite difficulties.",
+   quizzes:[
+    {q:"대나무(bamboo)가 상징하는 것은?",opts:["왕에 대한 충성","부모에 대한 효심","정의를 향한 의지","형제간의 우애"],ans:0},
+    {q:"연꽃(lotus)이 상징하는 것은?",opts:["정의를 향한 의지","부모에 대한 효심","왕에 대한 충성","형제간의 우애"],ans:0},
+    {q:"대나무가 사계절 푸른 이유로 언급된 성질은?",opts:["휘지 않고 어떤 날씨에도 푸르름을 유지함","꽃을 피움","열매를 맺음","뿌리가 매우 깊음"],ans:0}
+   ]},
+  {text:"Munjado was much more than a painting to people of the Joseon dynasty. It reminded them of important values that greatly influenced their behaviors and attitudes. In particular, for children, Munjado was a study tool. Through it, children in the Joseon dynasty could learn the importance of values in an easy and interesting way.",
+   quizzes:[
+    {q:"조선 시대 아이들에게 문자도는 어떤 역할을 했는가?",opts:["단순한 장식품","중요한 가치를 배우는 학습 도구","놀이 도구","제사용 물품"],ans:1},
+    {q:"문자도가 조선 시대 사람들에게 미친 영향은?",opts:["행동과 태도에 영향을 줌","경제활동을 도움","농사에 도움을 줌","건강을 지켜줌"],ans:0},
+    {q:"문자도를 통해 아이들이 배운 것은?",opts:["중요한 가치들을 쉽고 재미있게 배움","한자 쓰는 법만 배움","그림 그리는 기술만 배움","역사적 사건만 배움"],ans:0}
+   ]}
+ ]
+}
+];
+
+let curUnit=0,curPara=0,curMode="read",curLevel="easy";
+const BLANK_RATIO={easy:0.15,mid:0.3,hard:0.45};
+
+function flashButton(btn){
+  if(!btn) return;
+  btn.classList.add("flash");
+  setTimeout(()=>btn.classList.remove("flash"), 200);
+}
+
+function init(){
+  document.getElementById("unitTabs").innerHTML=UNITS.map((u,i)=>
+    `<button class="${i==curUnit?'active':''}" onclick="setUnit(${i},this)">${u.name}</button>`).join("");
+  renderParaTabs();
+  document.getElementById("modeTabs").innerHTML=`
+    <button class="${curMode=='read'?'active':''}" onclick="setMode('read',this)">📖 전체 읽기</button>
+    <button class="${curMode=='blank'?'active':''}" onclick="setMode('blank',this)">✏️ 빈칸 채우기</button>
+    <button class="${curMode=='quiz'?'active':''}" onclick="setMode('quiz',this)">❓ 객관식 풀기</button>`;
+  renderLevelTabs();
+  render();
+}
+function renderParaTabs(){
+  const paras=UNITS[curUnit].paras;
+  document.getElementById("paraTabs").innerHTML=paras.map((p,i)=>
+    `<button class="${i==curPara?'active':''}" onclick="setPara(${i},this)">문단 ${i+1}</button>`).join("");
+}
+function renderLevelTabs(){
+  const box=document.getElementById("levelTabs");
+  if(curMode!="blank"){box.innerHTML="";return;}
+  box.innerHTML=`
+    <button class="lvl-easy ${curLevel=='easy'?'active':''}" onclick="setLevel('easy',this)">쉬움</button>
+    <button class="lvl-mid ${curLevel=='mid'?'active':''}" onclick="setLevel('mid',this)">보통</button>
+    <button class="lvl-hard ${curLevel=='hard'?'active':''}" onclick="setLevel('hard',this)">어려움</button>`;
+}
+function setUnit(i,btn){curUnit=i;curPara=0;flashButton(btn);init();}
+function setPara(i,btn){curPara=i;flashButton(btn);render();renderParaTabs();}
+function setMode(m,btn){curMode=m;flashButton(btn);renderLevelTabs();render();}
+function setLevel(l,btn){curLevel=l;flashButton(btn);renderLevelTabs();render();}
+function reshuffle(btn){flashButton(btn);render();}
+
+function nextQuestion(btn){
+  flashButton(btn);
+  const paras=UNITS[curUnit].paras;
+  curPara = (curPara + 1) % paras.length;
+  init();
+}
+
+function prevQuestion(btn){
+  flashButton(btn);
+  const paras=UNITS[curUnit].paras;
+  curPara = (curPara - 1 + paras.length) % paras.length;
+  init();
+}
+
+function render(){
+  document.getElementById("score").innerText="";
+  document.getElementById("guide").style.display="none";
+  const para=UNITS[curUnit].paras[curPara];
+
+  if(curMode=="read"){
+    document.getElementById("content").innerHTML=`<p>${para.text}</p>`;
+    document.getElementById("guide").innerText="정답 보기: 본문을 참고하세요.";
+  }
+  else if(curMode=="blank"){
+    renderBlank(para.text);
+  }
+  else if(curMode=="quiz"){
+    renderQuiz(para.quizzes);
+  }
+}
+
+function renderBlank(text){
+  const words=text.split(" ");
+  const ratio=BLANK_RATIO[curLevel];
+  const candidates=words.map((w,i)=>({w,i})).filter(o=>o.w.replace(/[.,]/g,"").length>4);
+  const count=Math.max(3,Math.round(candidates.length*ratio));
+  const shuffled=[...candidates].sort(()=>Math.random()-0.5).slice(0,count).sort((a,b)=>a.i-b.i);
+  const blankIdx=shuffled.map(o=>o.i);
+
+  let html="",answerList=[];
+  words.forEach((w,i)=>{
+    if(blankIdx.includes(i)){
+      const clean=w.replace(/[.,]/g,"");
+      const punct=w.replace(clean,"");
+      answerList.push(clean.toLowerCase());
+      html+=`<input class="blank" data-ans="${clean.toLowerCase()}" maxlength="${clean.length+3}">${punct} `;
+    } else {
+      html+=w+" ";
+    }
+  });
+  document.getElementById("content").innerHTML=`<p>${html}</p>`;
+  document.getElementById("guide").innerText="정답: "+answerList.join(", ");
+  attachBlankKeyNav();
+}
+
+function attachBlankKeyNav(){
+  const inputs=Array.from(document.querySelectorAll(".blank"));
+  inputs.forEach((inp,idx)=>{
+    inp.addEventListener("keydown", e=>{
+      if(e.key==="Enter" || e.key==="Tab"){
+        e.preventDefault();
+        const next=inputs[idx+1];
+        if(next) next.focus();
+        else inp.blur();
+      }
+    });
+  });
+  if(inputs[0]) inputs[0].focus();
+}
+
+// ===== 여러 문제 중 무작위로 1개 선택하여 출제 =====
+function renderQuiz(quizzes){
+  const quiz = quizzes[Math.floor(Math.random()*quizzes.length)];
+  const withFlag=quiz.opts.map((o,i)=>({text:o, isAnswer:i===quiz.ans}));
+  const shuffled=[...withFlag].sort(()=>Math.random()-0.5);
+
+  let html=`<div class="qbox" id="qbox"><p><b>${quiz.q}</b></p>`;
+  shuffled.forEach((o,i)=>{
+    html+=`<label><input type="radio" name="quiz" value="${i}" data-correct="${o.isAnswer}"> ${i+1}. ${o.text}</label>`;
+  });
+  html+="</div>";
+  document.getElementById("content").innerHTML=html;
+
+  const correctIdx=shuffled.findIndex(o=>o.isAnswer);
+  document.getElementById("guide").innerText="정답: "+(correctIdx+1)+"번 - "+shuffled[correctIdx].text;
+}
+
+function checkAnswer(btn){
+  flashButton(btn);
+  if(curMode=="blank"){
+    const inputs=document.querySelectorAll(".blank");
+    let correct=0;
+    inputs.forEach(inp=>{
+      const val=inp.value.trim().toLowerCase();
+      const ans=inp.dataset.ans;
+      if(val===ans){inp.classList.add("ok");inp.classList.remove("no");correct++;}
+      else{inp.classList.add("no");inp.classList.remove("ok");}
+    });
+    document.getElementById("score").innerText=`점수: ${correct} / ${inputs.length}`;
+  }
+  else if(curMode=="quiz"){
+    const sel=document.querySelector('input[name="quiz"]:checked');
+    const box=document.getElementById("qbox");
+    if(!sel){alert("답을 선택하세요.");return;}
+    const isCorrect=sel.dataset.correct==="true";
+    if(isCorrect){box.classList.add("ok");document.getElementById("score").innerText="정답입니다! 🎉";}
+    else{box.classList.add("no");document.getElementById("score").innerText="오답입니다. 다시 확인해보세요.";}
+  }
+  else{
+    alert("전체 읽기 모드에서는 채점 기능이 없습니다. 빈칸 채우기 또는 객관식 풀기 모드를 이용하세요.");
+  }
+}
+
+function toggleGuide(btn){
+  flashButton(btn);
+  const g=document.getElementById("guide");
+  g.style.display=(g.style.display=="none"||g.style.display=="")?"block":"none";
+}
+
+init();
+</script>
+</body>
+</html>
