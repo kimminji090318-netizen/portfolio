@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>중3 역사 무한 문제풀기</title>
+    <style>
+        :root {
+            --bg: #f4f6f8;
+            --card: #ffffff;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --border: #e5e7eb;
+            --text: #1f2937;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            margin: 0 0 6px 0;
+            color: #111827;
+        }
+
+        .sub-title {
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-weight: bold;
+        }
+
+        .loading-screen {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.9s linear infinite;
+            margin: 0 auto 16px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .q-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            background: #ffffff;
+        }
+
+        .q-tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            background: #eff6ff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .q-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.5;
+            margin-bottom: 14px;
+            word-break: keep-all;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .option-label:hover {
+            background-color: #f9fafb;
+        }
+
+        .option-label input {
+            margin-right: 10px;
+            margin-top: 3px;
+        }
+
+        textarea.essay-input {
+            width: 100%;
+            height: 85px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+
+        .explanation {
+            margin-top: 12px;
+            padding: 12px;
+            background-color: #f8fafc;
+            border-left: 4px solid var(--primary);
+            font-size: 0.9rem;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-reload {
+            background-color: var(--success);
+            margin-top: 15px;
+        }
+
+        .result-summary {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>중3 역사 중간고사 무한 문제풀기</h1>
+        <div class="sub-title">고려-몽골 전쟁 ~ 조선 전기 (25개 고유 주제 · 무작위 정답 셔플)</div>
+    </header>
+
+    <div id="loading" class="loading-screen">
+        <div class="spinner"></div>
+        <p>정답 번호 및 보기를 무작위 섞어 정밀 검증 중입니다...</p>
+    </div>
+
+    <form id="quiz-form" style="display: none;">
+        <div id="quiz-list"></div>
+        <button type="button" class="btn" onclick="gradeQuiz()">답안 제출 및 채점하기</button>
+    </form>
+
+    <div id="result-area" style="display: none;">
+        <div class="result-summary" id="result-summary"></div>
+        <button type="button" class="btn btn-reload" onclick="generateNewQuiz()">🔄 완전 새로운 문제 세트 생성하기</button>
+    </div>
+</div>
+
+<script>
+    // =========================================================
+    // 🔑 API Key 설정 (빈 값 또는 자리표시 문자열이면 로컬 폴백 사용)
+    // =========================================================
+    const DEFAULT_GEMINI_API_KEY = "ENTER YOUR AI API KEY.";
+
+    // 25개 고유 주제 1대1 매핑 데이터 (중복 방지용)
+    const topics = [
+        { id: 1, topic: "고려-몽골 전쟁 원인 및 저고여 사건" },
+        { id: 2, topic: "처인성 전투 (용인, 김윤후, 처인부곡민)" },
+        { id: 3, topic: "고려-몽골 강화 조건 (고려 왕조 및 풍속 유지)" },
+        { id: 4, topic: "원의 영토 기구 (쌍성총관부, 동녕부, 탐라총관부)" },
+        { id: 5, topic: "원 간섭기 관제 격하 및 몽골풍 유행" },
+        { id: 6, topic: "권문세족의 농장 소유와 수탈" },
+        { id: 7, topic: "공민왕의 전민변정도감과 신돈의 개혁" },
+        { id: 8, topic: "신진사대부의 성리학 수용과 분파 (정몽주, 정도전)" },
+        { id: 9, topic: "신흥 무인 세력의 성장 (최영, 이성계)" },
+        { id: 10, topic: "고려 말~조선 최고의 교육기관 (성균관)" },
+        { id: 11, topic: "고려 시대 남녀 균등 상속과 가족제도" },
+        { id: 12, topic: "고려의 향도 조직과 노동 공동체" },
+        { id: 13, topic: "팔만대장경판 (합천 해인사, 세계기록유산)" },
+        { id: 14, topic: "직지심체요절 (1377년 금속활자)" },
+        { id: 15, topic: "조선 한양의 유교적 배치 (경복궁, 종묘, 사직단 등)" },
+        { id: 16, topic: "조선의 국호 의미 (고조선 계승)" },
+        { id: 17, topic: "조선의 명에 대한 사대 외교 목적" },
+        { id: 18, topic: "조선 세종의 집현전과 경연 (왕권과 신권의 조화)" },
+        { id: 19, topic: "조선 태종의 업적 (사병 혁파, 호패법)" },
+        { id: 20, topic: "조선 세조의 업적 (6조 직계제, 경국대전 착수)" },
+        { id: 21, topic: "조선 성종의 업적 (경국대전 완성, 홍문관)" },
+        { id: 22, topic: "조선의 지방 행정 조직 (8도, 관찰사, 수령, 향리, 유향소)" },
+        { id: 23, topic: "조선의 과거 제도 (문과, 무과, 잡과, 식년시)" },
+        { id: 24, topic: "조선 중앙 정치 기구 (의정부 3정승)" },
+        { id: 25, topic: "조선 세종 대 쓰시마섬(대마도) 정벌 및 교린 관계" }
+    ];
+
+    let generatedQuizData = [];
+
+    // 피셔-예이츠 셔플 알고리즘
+    function shuffleArray(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // 객관식 보기 셔플 및 정답 인덱스 재계산 함수
+    function shuffleOptionsAndFixAnswer(questionObj) {
+        if (questionObj.type !== 'choice' || !Array.isArray(questionObj.options)) return questionObj;
+
+        const originalCorrectOptionText = questionObj.options[questionObj.answer];
+        const shuffledOptions = shuffleArray(questionObj.options);
+        const newCorrectAnswerIndex = shuffledOptions.indexOf(originalCorrectOptionText);
+
+        return {
+            ...questionObj,
+            options: shuffledOptions,
+            answer: newCorrectAnswerIndex
+        };
+    }
+
+    async function generateNewQuiz() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('quiz-form').style.display = 'none';
+        document.getElementById('result-area').style.display = 'none';
+
+        const apiKey = (DEFAULT_GEMINI_API_KEY || '').trim();
+        const isPlaceholder = !apiKey || apiKey === 'ENTER YOUR AI API KEY.' || apiKey === 'ENETER YOUR AI API KEY.';
+
+        if (!isPlaceholder) {
+            try {
+                generatedQuizData = await fetchQuizFromGemini(apiKey);
+            } catch (e) {
+                console.error("API 호출 중 오류 발생, 백업 문제 엔진 작동:", e);
+                generatedQuizData = generateLocalFallbackQuiz();
+            }
+        } else {
+            generatedQuizData = generateLocalFallbackQuiz();
+        }
+
+        renderQuiz();
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('quiz-form').style.display = 'block';
+    }
+
+    async function fetchQuizFromGemini(key) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+
+        const prompt = `
+당신은 중학교 3학년 한국사 시험 출제 교사입니다.
+제시된 25개 고유 주제 목록을 바탕으로 중3 역사 시험 25문제를 출제하십시오.
+
+[출제 가이드라인 - 엄격 준수]
+1. 아래 25개 주제를 1번부터 25번까지 1:1로 정확히 대응시켜 총 25문제를 만드시오. (문제 간 내용 중복 금지!)
+   - 1번~22번: 객관식 5지선다형 (options 배열에 정확히 5개 역사 선택지)
+   - 23번~25번: 서술형 (options 없음, type: "essay")
+2. **정답 위치 필수 무작위화**: 정답 번호(answer 인덱스 0~4)가 특정 번호에 쏠리지 않고 0, 1, 2, 3, 4 번 위치에 골고루 무작위로 배치되도록 선택지 순서를 섞으십시오.
+3. **보기(options) 작성 엄격 제한**:
+   - 보기는 오직 순수한 역사적 명칭, 사실, 문장으로만 구성하십시오.
+   - 보기 안에 "(O)", "(X)", "틀린 설명", "오답 이유", "정답 해설" 같은 부가 설명 문구를 **절대로 넣지 마십시오.**
+   - 보기 및 문제 텍스트에 영어 알파벳(A~Z), "Q1", "Q28", "범위", "출처" 문구를 **절대로 넣지 마십시오.**
+4. 정답 설명은 오직 "explanation" 필드에만 작성하십시오.
+
+[25개 출제 주제]
+${JSON.stringify(topics, null, 2)}
+
+[반환 형식: JSON 배열만 출력]
+[
+  {
+    "type": "choice",
+    "question": "1번 주제 관련 문제 텍스트",
+    "options": ["선택지1", "선택지2", "선택지3", "선택지4", "선택지5"],
+    "answer": 2,
+    "explanation": "해설 텍스트"
+  },
+  ... (22개 객관식)
+  {
+    "type": "essay",
+    "question": "서술형 문제 텍스트",
+    "answer": "모범 답안 텍스트",
+    "explanation": "서술형 채점 기준 및 해설"
+  }
+]
+`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }]
+            })
+        });
+
+        const data = await response.json();
+        let text = data.candidates[0].content.parts[0].text;
+        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        const rawList = JSON.parse(text);
+
+        return rawList.map(q => {
+            q.question = cleanText(q.question);
+            if (q.type === 'choice' && Array.isArray(q.options)) {
+                q.options = q.options.map(opt => cleanText(opt));
+                return shuffleOptionsAndFixAnswer(q);
+            }
+            return q;
+        });
+    }
+
+    function cleanText(str) {
+        if (!str) return "";
+        return str
+            .replace(/[a-zA-Z]/g, '')
+            .replace(/Q\d+/g, '')
+            .replace(/범위|출처|순서/g, '')
+            .replace(/\(O\)|\(X\)|\(오답\)|\(정답\)/g, '')
+            .replace(/오답인 이유:?.*$/g, '')
+            .replace(/^[\d\.\s\-\)]+/, '')
+            .trim();
+    }
+
+    function generateLocalFallbackQuiz() {
+        const rawQuiz = [
+            { type: "choice", question: "고려 시대 몽골이 고려를 침략하게 된 직접적인 구실이 된 사건은?", options: ["저고여 살해 사건", "강강술래 유행", "신돈의 개혁", "세종의 탕평책", "무신 정변"], answer: 0, explanation: "저고여 살해 사건은 고려-몽골 전쟁의 직접적 계기가 되었습니다." },
+            { type: "choice", question: "고려-몽골 전쟁 중 김윤후와 부곡민들이 몽골 장수 살리타를 처단한 전투 지역은?", options: ["경기도 용인 처인성", "경상북도 안동", "강원도 평창", "충청남도 공주", "전라남도 여수"], answer: 0, explanation: "처인성 전투에서 김윤후와 부곡민이 몽골 장수 살리타를 물리쳤습니다." },
+            { type: "choice", question: "고려가 몽골과 강화를 맺을 때 쿠빌라이로부터 약속받은 내용으로 옳은 것은?", options: ["고려의 고유한 제도와 풍속 유지", "조선의 건국", "신분제 철폐", "중국과의 동맹", "무기 금지"], answer: 0, explanation: "강화 조건은 고려의 왕조와 풍속을 유지하는 것이 핵심이었습니다." },
+            { type: "choice", question: "원나라가 고려의 철령 이북 영토를 직접 지배하기 위해 설치했던 기구는?", options: ["쌍성총관부", "동녕부", "탐라총관부", "삼별초", "성균관"], answer: 0, explanation: "쌍성총관부는 원이 철령 이북 지역을 직접 통치하기 위해 설치한 행정 기구입니다." },
+            { type: "choice", question: "원 간섭기 고려 사회의 변화 모습으로 옳은 것은?", options: ["변발과 호복 등의 몽골풍 유행", "왕실 호칭의 격상", "노비 해방", "신분제 완전 폐지", "전국적인 농민 봉기"], answer: 0, explanation: "원 간섭기에는 몽골풍 생활양식이 유행하였습니다." },
+            { type: "choice", question: "원 간섭기 원나라 세력을 배경으로 대농장을 소유하고 농민을 수탈한 지배 세력은?", options: ["권문세족", "신진사대부", "향리", "유학자", "사병"], answer: 0, explanation: "권문세족은 대농장을 소유하며 지배력을 강화했습니다." },
+            { type: "choice", question: "공민왕이 권문세족을 견제하고 불법 토지와 노비 문제를 해결하기 위해 설치한 기구는?", options: ["전민변정도감", "삼정승", "평장사", "중추원", "의금부"], answer: 0, explanation: "전민변정도감은 토지와 노비 문제를 정리하는 데 사용되었습니다." },
+            { type: "choice", question: "고려 말 성리학을 바탕으로 등장하여 개혁을 추진한 학자 세력은?", options: ["신진사대부", "권문세족", "무신 세력", "사대부", "불교 승려"], answer: 0, explanation: "신진사대부는 성리학을 수용하며 개혁을 추진했습니다." },
+            { type: "choice", question: "고려 말 홍건적과 왜구의 침입을 물리치며 백성의 지지를 얻은 세력은?", options: ["신흥 무인 세력", "권문세족", "외척", "서경", "예부"], answer: 0, explanation: "신흥 무인 세력은 개혁과 백성 지지를 얻으며 성장했습니다." },
+            { type: "choice", question: "고려 말 공민왕이 유학 교육을 강화하기 위해 정비한 최고 교육기관은?", options: ["성균관", "태학", "국자감", "서원", "향교"], answer: 0, explanation: "성균관은 유교적 교육과 통치 이념을 강화하는 기관이었습니다." },
+            { type: "choice", question: "고려 시대 가족제도의 특징으로 옳지 않은 것은?", options: ["아들에게만 재산을 전액 상속했다", "자녀들이 돌아가며 집을 관리했다", "남녀의 재산 권리가 다르다", "가족 공동체 중심이었다", "가문의 명맥을 유지하려 했다"], answer: 0, explanation: "고려의 가족제도는 자녀가 돌아가며 공동으로 관리하는 경우가 많았으며, 아들에게만 재산을 모두 넘긴다는 표현은 전체를 설명하지 못합니다." },
+            { type: "choice", question: "고려 시대 불교 신앙을 바탕으로 형성된 대규모 노동 및 향촌 조직은?", options: ["향도", "계", "두레", "품앗이", "유향소"], answer: 0, explanation: "향도는 향촌 공동체적 성격을 띤 조직입니다." },
+            { type: "choice", question: "몽골의 침입을 부처의 힘으로 막아내고자 강화도에서 제작된 유네스코 세계기록유산은?", options: ["팔만대장경판", "직지심체요절", "홍이포", "대동여지도", "금속활자"], answer: 0, explanation: "팔만대장경판은 몽골의 침입을 막기 위해 제작되었습니다." },
+            { type: "choice", question: "1377년 청주 흥덕사에서 금속활자로 인쇄된 세계에서 가장 오래된 금속활자본은?", options: ["직지심체요절", "팔만대장경판", "동국여지승람", "삼국사기", "대동여지도"], answer: 0, explanation: "직지심체요절은 가장 오래된 금속활자본으로 알려져 있습니다." },
+            { type: "choice", question: "조선시대 한양의 유교적 배치 중 토지의 신과 곡식의 신에게 제사를 지내던 시설은?", options: ["사직단", "종묘", "경복궁", "삼청동", "창덕궁"], answer: 0, explanation: "사직단은 토지와 곡식의 신에게 제사를 지내는 장소입니다." },
+            { type: "choice", question: "태조 이성계가 조선이라는 국호를 정할 때 계승하고자 한 고대 국가 이름은?", options: ["고조선", "고구려", "부여", "신라", "백제"], answer: 0, explanation: "조선은 고조선을 계승한다는 의미를 담고 있습니다." },
+            { type: "choice", question: "조선이 명나라에 대해 사대 외교를 실시한 주된 목적으로 가장 적절한 것은?", options: ["국제 정세의 안정과 왕권 정통성 확보", "해상 무역 확대", "서양 문물 수입", "중국과의 동맹 강화", "농업 생산 증대"], answer: 0, explanation: "사대외교는 왕권 안정과 국제 정세를 고려한 외교 전략이었습니다." },
+            { type: "choice", question: "조선 세종이 집현전을 설치하고 학자들과 정치를 논의하기 위해 활성화한 제도는?", options: ["경연", "호패법", "6조 직계제", "삼정승 제도", "대동법"], answer: 0, explanation: "경연은 국왕과 학자들이 정치를 논의하는 제도입니다." },
+            { type: "choice", question: "조선 태종이 왕권을 강화하고 군사권을 국왕에게 집중시키기 위해 실시한 정책은?", options: ["사병 혁파", "집현전 설치", "신분제 폐지", "양전사업", "대동법"], answer: 0, explanation: "사병 혁파는 군사권을 국왕 중심으로 강화하는 정책이었습니다." },
+            { type: "choice", question: "조선 세조가 국왕 중심의 통치 체제를 확립하기 위해 시행한 국정 보고 제도는?", options: ["6조 직계제", "의정부 서사제", "대전통편", "금난전권", "속대전"], answer: 0, explanation: "6조 직계제는 중앙 행정 체제를 정비한 제도입니다." },
+            { type: "choice", question: "조선 성종 대에 완성되어 반포된 조선의 유교적 통치 법전은?", options: ["경국대전", "속대전", "대전통편", "대전회통", "삼강행실도"], answer: 0, explanation: "경국대전은 조선의 법전 체계 정비를 보여주는 대표적 제도입니다." },
+            { type: "choice", question: "조선시대 지방에 파견되어 수령을 감독하고 행정을 총괄하던 관직은?", options: ["관찰사", "향리", "수령", "좌수", "별감"], answer: 0, explanation: "관찰사는 지방 관찰을 담당하던 대표적 관리입니다." },
+            { type: "essay", question: "조선시대 과거 제도 중 관리 선발을 위해 3년마다 정기적으로 실시했던 시험의 명칭을 쓰시오.", answer: "식년시", explanation: "식년시는 3년마다 실시되던 과거 시험으로 관리 선발에 중요한 역할을 했습니다." },
+            { type: "essay", question: "조선 시대 최고 중앙 정책 결정 기구로 3정승(영의정, 좌의정, 우의정)이 합의하여 정책을 정하던 관청은?", answer: "의정부", explanation: "의정부는 조선의 최고 행정 기구로 삼정승이 협의하여 정책을 결정했습니다." },
+            { type: "essay", question: "조선 세종 시기 이종무가 왜구의 근거지를 토벌하기 위해 공격한 섬의 이름은?", answer: "쓰시마섬 (또는 대마도)", explanation: "이종무는 세종 때 쓰시마섬을 정벌해 왜구의 근거지를 억제했습니다." }
+        ];
+
+        return rawQuiz.map(q => {
+            if (q.type === 'choice') {
+                return shuffleOptionsAndFixAnswer(q);
+            }
+            return q;
+        });
+    }
+
+    function renderQuiz() {
+        const container = document.getElementById('quiz-list');
+        container.innerHTML = '';
+
+        generatedQuizData.forEach((q, idx) => {
+            const card = document.createElement('div');
+            card.className = 'q-card';
+
+            const tagText = q.type === 'choice' ? `[객관식] 주제 ${idx + 1}` : `[서술형] 주제 ${idx + 1}`;
+            let html = `<div class="q-tag">${tagText}</div>`;
+            html += `<div class="q-title">${idx + 1}. ${q.question}</div>`;
+
+            if (q.type === 'choice') {
+                html += `<div class="options">`;
+                q.options.forEach((opt, oIdx) => {
+                    html += `
+                        <label class="option-label">
+                            <input type="radio" name="q_${idx}" value="${oIdx}">
+                            <span>${oIdx + 1}. ${opt}</span>
+                        </label>
+                    `;
+                });
+                html += `</div>`;
+            } else {
+                html += `
+                    <textarea class="essay-input" id="essay_${idx}" placeholder="답안을 서술하세요..."></textarea>
+                `;
+            }
+
+            html += `
+                <div class="explanation" id="exp_${idx}">
+                    <strong>정답:</strong> ${q.type === 'choice' ? `${q.answer + 1}번 (${q.options[q.answer]})` : q.answer}<br>
+                    <strong>해설:</strong> ${q.explanation}
+                </div>
+            `;
+
+            card.innerHTML = html;
+            container.appendChild(card);
+        });
+    }
+
+    function gradeQuiz() {
+        let correctCount = 0;
+        let choiceCount = 0;
+
+        generatedQuizData.forEach((q, idx) => {
+            const expBox = document.getElementById(`exp_${idx}`);
+            expBox.style.display = 'block';
+
+            if (q.type === 'choice') {
+                choiceCount++;
+                const selected = document.querySelector(`input[name="q_${idx}"]:checked`);
+                if (selected && parseInt(selected.value) === q.answer) {
+                    correctCount++;
+                }
+            }
+        });
+
+        const summary = document.getElementById('result-summary');
+        summary.innerHTML = `채점 완료!<br>객관식 정답: <span style="color:var(--primary); font-size:1.4rem;">${correctCount} / ${choiceCount}</span> 문제`;
+
+        document.getElementById('result-area').style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    window.onload = generateNewQuiz;
+</script>
+
+</body>
+</html>
