@@ -48,46 +48,16 @@
 
 ---
 
-## 📖 사용 방법
+## 🔐 API 키 설정과 보안
 
-### 1. Google Gemini API 키 발급
-1. Google AI Studio 접속
-2. API 키 생성
-3. 키 복사
+- 실제 Gemini API 키를 HTML, JavaScript, README 또는 공개 저장소에 작성하지 않습니다.
+- `.env.example`은 설정 예시일 뿐이며, 일반 브라우저용 HTML/JavaScript는 `.env` 파일을 자동으로 읽지 못합니다.
+- 실제 API를 연결할 때는 백엔드 또는 서버리스 함수에서 `GEMINI_API_KEY` 환경변수를 읽고, 프런트엔드에서는 서버를 통해 요청하도록 구성해야 합니다.
+- 공개 저장소에 실제 키를 올린 적이 있다면 코드에서 삭제하는 것만으로는 부족하므로 기존 키를 폐기하고 새 키를 발급하세요.
 
-### 2. 환경 설정
-프로젝트 폴더에서 `.env` 파일 생성:
+## 🧪 실행 상태 안내
 
-```bash
-cp .env.example .env
-```
-
-`.env` 파일에 키 입력:
-
-```env
-GEMINI_API_KEY=your_actual_gemini_api_key_here
-GEMINI_MODEL=gemini-2.5-flash
-```
-
-### 3. 실행
-브라우저에서 HTML 파일을 열거나 로컬 서버 실행:
-
-```bash
-python -m http.server 8000
-```
-
-그다음 브라우저에서 `http://localhost:8000`으로 접속
-
----
-
-## 🔐 보안 정보
-
-- 실제 API 키는 절대 코드에 하드코딩하지 않기
-- `.env` 파일은 GitHub에 올리지 않기
-- `.gitignore`에 `.env` 등록해두기
-- 실제 배포 시에는 서버 프록시를 통해 API 호출 방식을 추천
-
----
+이 저장소의 `index.html`은 현재 안내 문구만 들어 있는 자리표시 파일입니다. README에 적힌 기능은 프로젝트의 목표와 설계 설명이며, 실제 시연을 위해서는 완성된 웹앱 HTML 파일을 추가해야 합니다.
 
 ## 🎓 배운 점
 
